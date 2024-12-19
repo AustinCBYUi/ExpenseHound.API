@@ -24,9 +24,12 @@ namespace ExpenseHound.API.Services
         /// <param name="config"></param>
         public ExpenseService(IConfiguration config)
         {
-            var connectionString = Environment.GetEnvironmentVariable("MongoDB__ConnectionString");
-            var dbName = Environment.GetEnvironmentVariable("MongoDB__DatabaseName");
-            var expCollection = Environment.GetEnvironmentVariable("MongoDB__CollectionNameExp");
+            //var connectionString = Environment.GetEnvironmentVariable("MongoDB__ConnectionString");
+            var connectionString = "mongodb+srv://cam23021:zdGjFOUITUD4E7wb@cms.odztw.mongodb.net/";
+            //var dbName = Environment.GetEnvironmentVariable("MongoDB__DatabaseName");
+            var dbName = "ExpenseHoundDB";
+            //var expCollection = Environment.GetEnvironmentVariable("MongoDB__CollectionNameExp");
+            var expCollection = "Expenses";
 
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(dbName);
