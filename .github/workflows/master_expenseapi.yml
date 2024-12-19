@@ -16,23 +16,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.0.2
-
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x' # Adjust for your .NET version
 
       - name: Restore NuGet packages
-        run: nuget restore
+        run: dotnet restore ExpenseHound.API/ExpenseHound.API.csproj
+
+      - name: Build the project
+        run: dotnet build --configuration Release ExpenseHound.API/ExpenseHound.API.csproj
 
       - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
+        run: dotnet publish --configuration Release --output ./published ExpenseHound.API/ExpenseHound.API.csproj
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: '/published/**'
+          path: ./published/**
 
   deploy:
     runs-on: windows-latest
@@ -41,7 +43,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # Required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -52,9 +54,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_49CE8814DBCF4E12B9C113B20F694F1E }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2578501E45574F2A8BFA29FC177EC293 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0C75F41B1E9E40998F8A1303C8004995 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -62,5 +64,4 @@ jobs:
         with:
           app-name: 'expenseapi'
           slot-name: 'Production'
-          package: .
-          
+          package: ./published
